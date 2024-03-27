@@ -65,20 +65,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file 
-    # with a Terraform Cloud user API token
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
-
-    - name: Setup terraform variables
-      id: vars
-      run: |-
-        cat > pipeline.auto.tfvars <<EOF
-        region="${{ vars.GCP_REGION }}" 
-        project="${{ vars.GCP_PROJECT }}" 
-        zone="${{ vars.GCP_ZONE }}"
-        EOF    
-
     # Initialize a new or existing Terraform working directory by creating initial files, 
     # loading any remote state, downloading modules, etc.
     - name: Terraform Init
