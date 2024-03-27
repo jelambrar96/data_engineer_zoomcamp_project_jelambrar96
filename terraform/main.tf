@@ -14,8 +14,26 @@ provider "google" {
 }
 
 module "google_cloud_storage_bucket" {
-  source  = "./modules/google-cloud-storage-bucket"
+  source  = "./modules/google_cloud_storage_bucket"
   project = var.project
   region  = var.region
   zone = var.zone
+}
+
+module "google_cloud_function_instance" {
+  source = "./modules/google_cloud_function_instance"
+  project = var.project
+  region  = var.region
+  zone = var.zone
+  general_purpose_bucket_name = module.google_cloud_storage_bucket.general_purpose_bucket_name
+  data_warehouse_bucket_name = module.google_cloud_storage_bucket.dataproc_bucket_name
+}
+
+module "google_cloud_composer_instance" {
+  source = "./modules/google_cloud_composer_instance"
+  project = var.project
+  region  = var.region
+  zone = var.zone
+  data_warehouse_bucket_name = module.google_cloud_storage_bucket.data_warehouse_bucket_name
+  cloud_fuction_link         = module.google_cloud_function_instance.cloud_fuction_link
 }
