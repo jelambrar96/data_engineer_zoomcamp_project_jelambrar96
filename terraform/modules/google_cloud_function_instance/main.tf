@@ -2,15 +2,15 @@
 # create ZIP file for Cloud Function
 data "archive_file" "cloud_function_download_code" {
     type  = "zip"
-    source_dir = "../gfunctions/download_function/"
-    output_path = "../gfunctions/download_function.zip"
+    source_dir = "${path.root}/../gfunctions/download_function/"
+    output_path = "${path.root}/../gfunctions/download_function.zip"
 }
 
 # Upload ZIP file
 resource "google_storage_bucket_object" "cloud_function_download_archive" {
     name = "download_function.zip"
     bucket = var.general_purpose_bucket_name
-    source = "../gfunctions/"
+    source = "${path.root}/../gfunctions/"
 }
 
 # Create Cloud Function Instance
