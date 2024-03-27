@@ -76,7 +76,7 @@ jobs:
         cat > pipeline.auto.tfvars <<EOF
         region="${{ vars.GCP_REGION }}" 
         project="${{ vars.GCP_PROJECT }}" 
-        data-project="${{ vars.GCP_DATA_PROJECT }}"
+        zone="${{ vars.GCP_ZONE }}"
         EOF    
 
     # Initialize a new or existing Terraform working directory by creating initial files, 
