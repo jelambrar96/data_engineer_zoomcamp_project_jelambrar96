@@ -76,6 +76,7 @@ jobs:
 
     - name: Setup terraform variables
       id: vars
+      working-directory: ./terraform
       run: |-
         cat > pipeline.auto.tfvars <<EOF
         region="${{ vars.GCP_REGION }}" 
