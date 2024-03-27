@@ -86,6 +86,9 @@ jobs:
       working-directory: ./terraform
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }} 
+        TF_VAR_project: ${{ vars.GCP_PROJECT }}
+        TF_VAR_zone: ${{ vars.GCP_ZONE }}
+        TF_VAR_region: ${{ vars.GCP_REGION }}
 
     # Generates an execution plan for Terraform
     - name: Terraform Plan
@@ -93,9 +96,15 @@ jobs:
       working-directory: ./terraform
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }} 
+        TF_VAR_project: ${{ vars.GCP_PROJECT }}
+        TF_VAR_zone: ${{ vars.GCP_ZONE }}
+        TF_VAR_region: ${{ vars.GCP_REGION }}
 
     - name: Terraform Destroy
       run: terraform destroy -auto-approve -input=false
       working-directory: ./terraform
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }} 
+        TF_VAR_project: ${{ vars.GCP_PROJECT }}
+        TF_VAR_zone: ${{ vars.GCP_ZONE }}
+        TF_VAR_region: ${{ vars.GCP_REGION }}

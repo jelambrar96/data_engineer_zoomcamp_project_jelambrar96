@@ -70,28 +70,16 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file 
-    # with a Terraform Cloud user API token
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
-
-    - name: Setup terraform variables
-      id: vars
-      working-directory: ./terraform
-      run: |-
-        cat > pipeline.auto.tfvars <<EOF
-        region="${{ vars.GCP_REGION }}" 
-        project="${{ vars.GCP_PROJECT }}" 
-        zone="${{ vars.GCP_ZONE }}"
-        EOF    
-
     # Initialize a new or existing Terraform working directory by creating initial files, 
     # loading any remote state, downloading modules, etc.
     - name: Terraform Init
       run: terraform init
       working-directory: ./terraform
       env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }} 
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        TF_VAR_project: ${{ vars.GCP_PROJECT }}
+        TF_VAR_zone: ${{ vars.GCP_ZONE }}
+        TF_VAR_region: ${{ vars.GCP_REGION }}
 
     # Generates an execution plan for Terraform
     - name: Terraform Plan
@@ -99,6 +87,9 @@ jobs:
       working-directory: ./terraform
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }} 
+        TF_VAR_project: ${{ vars.GCP_PROJECT }}
+        TF_VAR_zone: ${{ vars.GCP_ZONE }}
+        TF_VAR_region: ${{ vars.GCP_REGION }}
 
       # On push to "master", build or change infrastructure according to Terraform configuration files
       # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
@@ -108,3 +99,6 @@ jobs:
       working-directory: ./terraform
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }} 
+        TF_VAR_project: ${{ vars.GCP_PROJECT }}
+        TF_VAR_zone: ${{ vars.GCP_ZONE }}
+        TF_VAR_region: ${{ vars.GCP_REGION }}
