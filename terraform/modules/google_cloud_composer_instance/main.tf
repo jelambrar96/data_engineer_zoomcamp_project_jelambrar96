@@ -11,14 +11,14 @@ resource "local_file" "env_vars" {
 
 # Create composer Environment
 resource "google_composer_environment" "composer_service" {
-    name   = "capstone-project-composer-service"
+    name   = "${var.project}-composer-env"
     project = var.project
     region = var.region
 
     config {
 
         software_config {
-                airflow_config_overrides = {
+            airflow_config_overrides = {
                 core-dags_are_paused_at_creation = "True"
                 image_version = "composer-2-airflow-2"                
             }
