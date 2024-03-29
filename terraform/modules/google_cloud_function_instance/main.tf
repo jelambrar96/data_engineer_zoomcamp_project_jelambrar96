@@ -10,7 +10,7 @@ data "archive_file" "cloud_function_download_code" {
 resource "google_storage_bucket_object" "cloud_function_download_archive" {
     name = "download_function.zip"
     bucket = var.general_purpose_bucket_name
-    source = "${path.root}/../gfunctions/"
+    source = "${path.root}/../gfunctions/download_function.zip"
 }
 
 # Create Cloud Function Instance
