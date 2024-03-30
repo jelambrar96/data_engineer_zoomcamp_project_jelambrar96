@@ -19,7 +19,7 @@ resource "google_cloudfunctions_function" "cloud_function_download_instance" {
     description = "Cloud Function to download GH archive data"
     runtime = "python39"
 
-    available_memory_mb = 1024
+    available_memory_mb = 2048
     source_archive_bucket = var.general_purpose_bucket_name
     source_archive_object = google_storage_bucket_object.cloud_function_download_archive.name
     trigger_http = true
