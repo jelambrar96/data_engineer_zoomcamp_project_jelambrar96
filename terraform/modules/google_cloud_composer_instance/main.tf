@@ -24,7 +24,14 @@ resource "google_composer_environment" "composer_service" {
 
     }
 
+    environment_size = "ENVIRONMENT_SIZE_SMALL"
+
   }
+
+  storage_config {
+    bucket = var.composer_bucket
+  }
+
 }
 
 
