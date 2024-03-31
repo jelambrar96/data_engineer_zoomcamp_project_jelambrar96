@@ -26,7 +26,7 @@ resource "google_cloudfunctions_function" "cloud_function_download_instance" {
     entry_point = "download_gh_archive_data"
 
     environment_variables = {
-        BUCKET_NAME = var.data_warehouse_bucket_name
+        BUCKET_NAME = var.general_purpose_bucket_name
     }
 
 }
