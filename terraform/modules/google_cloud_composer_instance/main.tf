@@ -3,7 +3,7 @@ resource "google_composer_environment" "composer_service" {
   name   = "${var.project}-composer-env"
   project = var.project
   region = var.region
-
+  
   config {
 
     software_config {
@@ -38,19 +38,30 @@ resource "google_composer_environment" "composer_service" {
 
 }
 
+locals {
+  bucket_path = google_composer_environment.composer_service.config.0.dag_gcs_prefix
+  project_id  = split("/", local.bucket_path)[2]
+}
 
-resource "google_storage_bucket_object" "composer_repo_archive" {
+resource "google_storage_bucket_object" "pyspark_repo_archive" {
   for_each = fileset("../composer/dags/", "*.py")
 
   name   = "dags/${each.key}"
-  bucket = var.composer_bucket_name
+  bucket = local.project_id
   source = "../composer/dags/${each.key}"
 }
 
-
+# resource "google_storage_bucket_object" "composer_repo_archive" {
+#   for_each = fileset("../composer/dags/", "*.py")
+# 
+#   name   = "dags/${each.key}"
+#   bucket = var.composer_bucket_name
+#   source = "../composer/dags/${each.key}"
+# }
+# 
 # resource "google_project_iam_member" "service_agent_role" {
 #   provider = google-beta
 #   project =  var.project
-#   member = "serviceAccount:service-PROJECT_NUMBER@cloudcomposer-accounts.iam.gserviceaccount.com"
+#   member = "serviceAccount:service-${var.project_number}@cloudcomposer-accounts.iam.gserviceaccount.com"
 #   role = "roles/composer.ServiceAgentV2Ext"
 # }
