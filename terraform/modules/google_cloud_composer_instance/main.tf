@@ -7,12 +7,11 @@ resource "google_composer_environment" "composer_service" {
   config {
 
     software_config {
+
+      image_version = "composer-2.6.6-airflow-2.6.3"
+
       airflow_config_overrides = {
         core-dags_are_paused_at_creation = "True"
-      }
-
-      pypi_packages = {
-        apache-airflow-providers-dbt-cloud = ""
       }
 
       env_variables = {
@@ -36,6 +35,10 @@ resource "google_composer_environment" "composer_service" {
 
   }
 
+  storage_config {
+    bucket = var.composer_bucket_name
+  }
+
 }
 
 locals {
@@ -51,17 +54,6 @@ resource "google_storage_bucket_object" "pyspark_repo_archive" {
   source = "../composer/dags/${each.key}"
 }
 
-# resource "google_storage_bucket_object" "composer_repo_archive" {
-#   for_each = fileset("../composer/dags/", "*.py")
-# 
-#   name   = "dags/${each.key}"
-#   bucket = var.composer_bucket_name
-#   source = "../composer/dags/${each.key}"
-# }
-# 
-# resource "google_project_iam_member" "service_agent_role" {
-#   provider = google-beta
-#   project =  var.project
-#   member = "serviceAccount:service-${var.project_number}@cloudcomposer-accounts.iam.gserviceaccount.com"
-#   role = "roles/composer.ServiceAgentV2Ext"
-# }
+
+
+

@@ -32,6 +32,15 @@ resource "google_storage_bucket" "data_warehouse_bucket" {
 
 # ------------------------------------------------------------------------
 
+resource "google_storage_bucket" "data_lake_bucket" {
+    name  = "${var.project}-data-lake-bucket"
+    location = var.region
+    public_access_prevention = "enforced"
+    force_destroy = true
+}
+
+# ------------------------------------------------------------------------
+
 resource "google_storage_bucket" "dataproc_bucket" {
     name = "${var.project}-dataproc-bucket"
     location = var.region
@@ -47,3 +56,5 @@ resource "google_storage_bucket" "composer_bucket" {
     public_access_prevention = "enforced"
     force_destroy = true
 }
+
+

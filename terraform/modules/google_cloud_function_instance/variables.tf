@@ -1,4 +1,9 @@
 
+variable "data_lake_bucket_name" {
+    type = string
+    description = ""
+}
+
 variable "data_warehouse_bucket_name" {
     type = string
     description = ""
