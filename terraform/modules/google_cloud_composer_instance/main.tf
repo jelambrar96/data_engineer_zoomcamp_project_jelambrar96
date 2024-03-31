@@ -1,14 +1,3 @@
-
-resource "local_file" "env_vars" {
-  content  = jsonencode({
-    "GOOGLE_CLOUD_PROJECT_ID" : var.project,
-    "GOOGLE_CLOUD_STORAGE_BUCKET" : var.data_warehouse_bucket_name,
-    "REGION": var.region,
-    "download_gh_data_cloud_function": var.cloud_fuction_link
-  })
-  filename = "${path.module}/env_vars.json"
-}
-
 # Create composer Environment
 resource "google_composer_environment" "composer_service" {
   name   = "${var.project}-composer-env"
@@ -23,6 +12,13 @@ resource "google_composer_environment" "composer_service" {
 
       pypi_packages = {
         apache-airflow-providers-dbt-cloud = ""
+      }
+
+      env_variables = {
+        GOOGLE_CLOUD_PROJECT_ID : var.project,
+        GOOGLE_CLOUD_STORAGE_BUCKET : var.data_warehouse_bucket_name,
+        REGION: var.region,
+        download_gh_data_cloud_function: var.cloud_fuction_link
       }
 
     }
