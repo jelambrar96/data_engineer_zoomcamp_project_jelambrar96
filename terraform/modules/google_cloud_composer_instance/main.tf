@@ -28,10 +28,6 @@ resource "google_composer_environment" "composer_service" {
 
   }
 
-  storage_config {
-    bucket = var.composer_bucket
-  }
-
 }
 
 
@@ -42,3 +38,11 @@ resource "google_storage_bucket_object" "composer_repo_archive" {
   bucket = var.composer_bucket_name
   source = "../composer/dags/${each.key}"
 }
+
+
+# resource "google_project_iam_member" "service_agent_role" {
+#   provider = google-beta
+#   project =  var.project
+#   member = "serviceAccount:service-PROJECT_NUMBER@cloudcomposer-accounts.iam.gserviceaccount.com"
+#   role = "roles/composer.ServiceAgentV2Ext"
+# }
