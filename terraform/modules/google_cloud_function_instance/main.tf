@@ -14,20 +14,73 @@ resource "google_storage_bucket_object" "cloud_function_download_archive" {
 }
 
 # Create Cloud Function Instance
-resource "google_cloudfunctions_function" "cloud_function_download_instance" {
+# resource "google_cloudfunctions_function" "cloud_function_download_instance" {
+#     name = "${var.project}-download-google-function"
+#     description = "Cloud Function to download GH archive data"
+#     runtime = "python39"
+# 
+#     available_memory_mb = 2048
+#     source_archive_bucket = var.general_purpose_bucket_name
+#     source_archive_object = google_storage_bucket_object.cloud_function_download_archive.name
+#     trigger_http = true
+#     entry_point = "download_gh_archive_data"
+# 
+#     environment_variables = {
+#         BUCKET_NAME = var.general_purpose_bucket_name
+#     }
+# 
+# }
+
+resource "google_cloudfunctions2_function" "cloud_function_download_instance" {
     name = "${var.project}-download-google-function"
     description = "Cloud Function to download GH archive data"
-    runtime = "python39"
+    location = var.region
 
-    available_memory_mb = 1024
-    source_archive_bucket = var.general_purpose_bucket_name
-    source_archive_object = google_storage_bucket_object.cloud_function_download_archive.name
-    trigger_http = true
-    entry_point = "download_gh_archive_data"
 
-    environment_variables = {
-        BUCKET_NAME = var.data_warehouse_bucket_name
+    build_config {
+        runtime = "python39"
+        entry_point = "download_gh_archive_data"
+        environment_variables = {
+            BUCKET_NAME = var.data_lake_bucket_name
+        }
+        source {
+            storage_source {
+                bucket =  var.general_purpose_bucket_name
+                object = google_storage_bucket_object.cloud_function_download_archive.name
+            }
+        }
     }
 
+  service_config {
+    max_instance_count  = 1
+    available_memory    = "2Gi"
+    timeout_seconds     = 60
+  }
+
 }
+
+
+# resource "google_cloud_scheduler_job" "invoke_cloud_function" {
+#   name        = "invoke-gcf-function"
+#   description = "Schedule the HTTPS trigger for cloud function"
+#   project     = google_cloudfunctions2_function.cloud_function_download_instance.project
+#   region      = google_cloudfunctions2_function.cloud_function_download_instance.project
+# 
+#   http_target {
+#     uri         = google_cloudfunctions2_function.cloud_function_download_instance.service_config[0].uri
+#     http_method = "POST"
+#     oidc_token {
+#       audience              = "${google_cloudfunctions2_function.cloud_function_download_instance.service_config[0].uri}/"
+#       service_account_email = google_service_account.account.email
+#     }
+#   }
+# }
+
+resource "google_cloud_run_service_iam_member" "member" {
+  location = google_cloudfunctions2_function.cloud_function_download_instance.location
+  service  = google_cloudfunctions2_function.cloud_function_download_instance.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
 
