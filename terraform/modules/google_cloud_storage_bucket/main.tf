@@ -30,6 +30,8 @@ resource "google_storage_bucket" "data_warehouse_bucket" {
     force_destroy = true
 }
 
+# ------------------------------------------------------------------------
+
 resource "google_storage_bucket" "dataproc_bucket" {
     name = "${var.project}-dataproc-bucket"
     location = var.region
@@ -37,3 +39,11 @@ resource "google_storage_bucket" "dataproc_bucket" {
     force_destroy = true
 }
 
+# ------------------------------------------------------------------------
+
+resource "google_storage_bucket" "composer_bucket" {
+    name = "${var.project}-composer-bucket"
+    location = var.region
+    public_access_prevention = "enforced"
+    force_destroy = true
+}

@@ -34,6 +34,12 @@ module "google_cloud_composer_instance" {
   project = var.project
   region  = var.region
   zone = var.zone
+  composer_bucket_name = module.google_cloud_storage_bucket.composer_bucket_name
   data_warehouse_bucket_name = module.google_cloud_storage_bucket.data_warehouse_bucket_name
   cloud_fuction_link         = module.google_cloud_function_instance.cloud_fuction_link
 }
+
+# module "google_project_service_api" {
+#     source = "./modules/google_project_service_api"
+#     project = var.project
+# }

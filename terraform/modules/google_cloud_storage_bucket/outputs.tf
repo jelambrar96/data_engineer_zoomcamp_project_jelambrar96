@@ -10,3 +10,7 @@ output "general_purpose_bucket_name" {
 output "dataproc_bucket_name" {
   value = google_storage_bucket.dataproc_bucket.name
 }
+
+output "composer_bucket_name" {
+  value = google_storage_bucket.composer_bucket.name
+}

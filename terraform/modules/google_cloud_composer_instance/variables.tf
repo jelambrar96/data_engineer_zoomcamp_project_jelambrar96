@@ -3,6 +3,11 @@ variable  cloud_fuction_link {
     type = string
 }
 
+variable composer_bucket_name {
+    description = ""
+    type = string    
+}
+
 variable  data_warehouse_bucket_name {
     description = ""
     type = string
