@@ -8,15 +8,24 @@ variable composer_bucket_name {
     type = string    
 }
 
+variable  dataproc_cluster_name {
+    description = ""
+    type = string    
+}
+
 variable  data_warehouse_bucket_name {
     description = ""
     type = string
 }
 
-
 variable project {
     description = ""
     type = string
+}
+
+variable pyspark_repo_bucket_name {
+    description = ""
+    type = string    
 }
 
 variable region {
@@ -30,4 +39,5 @@ variable zone {
     description = ""
     type = string
 }
+
 

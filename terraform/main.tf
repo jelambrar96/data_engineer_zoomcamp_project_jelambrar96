@@ -36,7 +36,9 @@ module "google_cloud_composer_instance" {
   zone = var.zone
   composer_bucket_name = module.google_cloud_storage_bucket.composer_bucket_name
   data_warehouse_bucket_name = module.google_cloud_storage_bucket.data_warehouse_bucket_name
-  cloud_fuction_link         = module.google_cloud_function_instance.cloud_fuction_link
+  cloud_fuction_link = module.google_cloud_function_instance.cloud_fuction_link
+  dataproc_cluster_name = module.google_cloud_storage_bucket.dataproc_bucket_name
+  pyspark_repo_bucket_name = module.google_cloud_storage_bucket.dataproc_bucket_name
 }
 
 # module "google_project_service_api" {
