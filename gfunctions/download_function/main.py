@@ -19,11 +19,9 @@ def download_gh_archive_data(request):
     elif request_args and 'date' in request_args:
         date = request_args['date']
     else:
-        return 'Error: download_gh_archive_data. Error date argument', 400
-
-    # yesterday_datetime = datetime.strptime(date, "%Y-%m-%d") - timedelta(days=1)
-    # yesterday_date = yesterday_datetime.strftime("%Y-%m-%d")
-    # date = yesterday_date
+        yesterday_datetime = datetime.strptime(date, "%Y-%m-%d") - timedelta(days=1)
+        yesterday_date = yesterday_datetime.strftime("%Y-%m-%d")
+        date = yesterday_date
 
     storage_client = Client()
     bucket_name = os.environ.get('BUCKET_NAME')
