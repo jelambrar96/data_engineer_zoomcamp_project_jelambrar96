@@ -8,19 +8,6 @@ resource "google_storage_bucket" "general_purpose_bucket" {
     public_access_prevention = "enforced"
     force_destroy = true
 }
-
-resource "google_storage_bucket_object" "raw_folder" {
-  name = "raw/"
-  content = "raw data forlder."
-  bucket = "${google_storage_bucket.general_purpose_bucket.name}"
-}
-
-resource "google_storage_bucket_object" "parquet_folder" {
-  name = "parquet/"
-  content = "parquet data forlder."
-  bucket = "${google_storage_bucket.general_purpose_bucket.name}"
-}
-
 # ------------------------------------------------------------------------
 
 resource "google_storage_bucket" "data_warehouse_bucket" {
@@ -38,6 +25,20 @@ resource "google_storage_bucket" "data_lake_bucket" {
     public_access_prevention = "enforced"
     force_destroy = true
 }
+
+
+resource "google_storage_bucket_object" "raw_folder" {
+  name = "raw/"
+  content = "raw data forlder."
+  bucket = "${google_storage_bucket.data_lake_bucket.name}"
+}
+
+resource "google_storage_bucket_object" "parquet_folder" {
+  name = "parquet/"
+  content = "parquet data forlder."
+  bucket = "${google_storage_bucket.data_lake_bucket.name}"
+}
+
 
 # ------------------------------------------------------------------------
 

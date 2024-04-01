@@ -51,11 +51,15 @@ resource "google_cloudfunctions2_function" "cloud_function_download_instance" {
         }
     }
 
-  service_config {
-    max_instance_count  = 1
-    available_memory    = "2Gi"
-    timeout_seconds     = 60
-  }
+    service_config {
+        max_instance_count  = 1
+        available_memory    = "2Gi"
+        timeout_seconds     = 60
+
+        environment_variables = {
+            BUCKET_NAME = var.data_lake_bucket_name
+        }
+    }
 
 }
 
@@ -82,5 +86,4 @@ resource "google_cloud_run_service_iam_member" "member" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
-
 
