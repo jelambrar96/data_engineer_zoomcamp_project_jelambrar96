@@ -27,18 +27,17 @@ resource "google_storage_bucket" "data_lake_bucket" {
 }
 
 
-resource "google_storage_bucket_object" "raw_folder" {
-  name = "raw/"
-  content = "raw data forlder."
-  bucket = "${google_storage_bucket.data_lake_bucket.name}"
-}
+# resource "google_storage_bucket_object" "raw_folder" {
+#   name = "raw/"
+#   content = "raw data forlder."
+#   bucket = "${google_storage_bucket.data_lake_bucket.name}"
+# }
 
-resource "google_storage_bucket_object" "parquet_folder" {
-  name = "parquet/"
-  content = "parquet data forlder."
-  bucket = "${google_storage_bucket.data_lake_bucket.name}"
-}
-
+# resource "google_storage_bucket_object" "parquet_folder" {
+#   name = "parquet/"
+#   content = "parquet data forlder."
+#   bucket = "${google_storage_bucket.data_lake_bucket.name}"
+# }
 
 # ------------------------------------------------------------------------
 
