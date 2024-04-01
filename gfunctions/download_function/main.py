@@ -32,6 +32,15 @@ def download_gh_archive_data(request):
         yesterday_date = yesterday_datetime.strftime("%Y-%m-%d")
         date = yesterday_date
 
+
+    if request_json and 'hour' in request_json:
+        hour = request_json['hour']
+    elif request_args and 'hour' in request_args:
+        hour = request_args['hour']
+    else:
+        hour = datetime.now().hour
+        
+
     storage_client = Client()
     bucket_name = os.environ.get('BUCKET_NAME')
 
@@ -43,20 +52,18 @@ def download_gh_archive_data(request):
 
     with tempfile.TemporaryDirectory() as output_dir:
 
-        for hour in range(24):
+        url = f"https://data.gharchive.org/{date}-{hour}.json.gz"
+        file_name = f"{date}-{hour}.json.gz"
+        file_path = os.path.join(output_dir, file_name)
+        response = requests.get(url)
+        with open(file_path, 'wb') as f:
+            f.write(response.content)
 
-            url = f"https://data.gharchive.org/{date}-{hour}.json.gz"
-            file_name = f"{date}-{hour}.json.gz"
-            file_path = os.path.join(output_dir, file_name)
-            response = requests.get(url)
-            with open(file_path, 'wb') as f:
-                f.write(response.content)
+        blob = bucket.blob(f"gh-archives/raw/{date}/")
+        blob.upload_from_string('')
 
-            blob = bucket.blob(f"gh-archives/raw/{date}/")
-            blob.upload_from_string('')
-
-            blob_name = f"gh-archives/raw/{date}/{file_name}"
-            blob = bucket.blob(blob_name)
-            blob.upload_from_filename(file_path)
+        blob_name = f"gh-archives/raw/{date}/{file_name}"
+        blob = bucket.blob(blob_name)
+        blob.upload_from_filename(file_path)
 
     return "Success: download_gh_archive_data. ", 200
