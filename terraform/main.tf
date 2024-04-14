@@ -41,8 +41,9 @@ module "google_cloud_composer_instance" {
   dataproc_num_workers = module.google_dataproc_instance.dataproc_num_workers_instances
   dataproc_master_machine_type = module.google_dataproc_instance.dataproc_master_machine_type
   dataproc_worker_machine_type = module.google_dataproc_instance.dataproc_worker_machine_type
-  dataproc_master_disk_type = module.google_dataproc_instance.dataproc_master_disk_type
-  dataproc_worker_disk_type = module.google_dataproc_instance.dataproc_worker_disk_type
+  # dataproc_master_disk_type = module.google_dataproc_instance.dataproc_master_disk_type
+  # dataproc_worker_disk_type = module.google_dataproc_instance.dataproc_worker_disk_type
+  dataproc_python_script_path = module.google_dataproc_instance.dataproc_python_script_link
 
   composer_bucket_name = module.google_cloud_storage_bucket.composer_bucket_name
   data_lake_bucket_name = module.google_cloud_storage_bucket.data_lake_bucket_name

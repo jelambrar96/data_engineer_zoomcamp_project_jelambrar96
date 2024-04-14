@@ -13,15 +13,15 @@ variable  dataproc_cluster_name {
     type = string    
 }
 
-variable "dataproc_master_disk_type" {
-    description = ""
-    type = string
-}
-
-variable "dataproc_worker_disk_type" {
-    description = ""
-    type = string
-}
+# variable "dataproc_master_disk_type" {
+#     description = ""
+#     type = string
+# }
+# 
+# variable "dataproc_worker_disk_type" {
+#     description = ""
+#     type = string
+# }
 
 variable "dataproc_master_machine_type" {
     description = ""
@@ -76,3 +76,7 @@ variable zone {
 }
 
 
+variable dataproc_python_script_path {
+    description = ""
+    type = string
+}

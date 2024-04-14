@@ -27,6 +27,11 @@ output "dataproc_num_workers_instances" {
     value = google_dataproc_cluster.pyspark_cluster.cluster_config.0.worker_config.0.num_instances
 }
 
+output "dataproc_python_script_link" {
+    # value = google_storage_bucket_object.pyspark_repo_archive.media_link
+    value = "gs//${var.dataproc_bucket_name}/dataproc_01_extract_gh_data.py"
+}
+
 # Check out current state of the jobs
 # output "spark_status" {
 #     value = google_dataproc_job.pyspark.status
