@@ -326,3 +326,264 @@ resource "google_storage_bucket_object" "look_up_visibility_type_object" {
 # -----------------------------------------------------------------------------------------
 
 
+resource "google_bigquery_table" "dimentional_user_table" {
+    
+    project = var.project
+    location = var.region
+    
+    dataset_id = google_bigquery_dataset.dataset.id
+    table_id   = "dimentional_user_table"
+    description = ""
+
+    schema = <<EOF
+[
+  {
+    "name": "user_id",
+    "type": "INT64",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "user_name",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "user_url",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": ""
+  }
+]
+EOF
+
+    table_constraints {
+        primary_key  {
+            columns = "user_id"
+        }
+    }
+
+}
+
+
+resource "google_bigquery_table" "dimentional_repository_table" {
+    
+    project = var.project
+    location = var.region
+    
+    dataset_id = google_bigquery_dataset.dataset.id
+    table_id   = "dimentional_repository_table"
+    description = ""
+
+    schema = <<EOF
+[
+  {
+    "name": "repository_id",
+    "type": "INT64",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "repository_name",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "repository_url",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": ""
+  }
+]
+EOF
+
+    table_constraints {
+        primary_key  {
+            columns = "repository_id"
+        }
+    }
+
+}
+
+
+resource "google_bigquery_table" "dimentional_organization_table" {
+    
+    project = var.project
+    location = var.region
+    
+    dataset_id = google_bigquery_dataset.dataset.id
+    table_id   = "dimentional_organization_table"
+    description = ""
+
+    schema = <<EOF
+[
+  {
+    "name": "organization_id",
+    "type": "INT64",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "organization_name",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "organization_url",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": ""
+  }
+]
+EOF
+
+    table_constraints {
+        primary_key  {
+            columns = "organization_id"
+        }
+    }
+
+}
+
+
+resource "google_bigquery_table" "dimentional_language_table" {
+    
+    project = var.project
+    location = var.region
+    
+    dataset_id = google_bigquery_dataset.dataset.id
+    table_id   = "dimentional_language_table"
+    description = ""
+
+    schema = <<EOF
+[
+  {
+    "name": "language_id",
+    "type": "INT64",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "language_name",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": ""
+  }
+]
+EOF
+
+    table_constraints {
+        primary_key  {
+            columns = "language_id"
+        }
+    }
+
+}
+
+# -----------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------
+
+resource "google_bigquery_table" "staging_allowed_events_table" {
+    
+    project = var.project
+    location = var.region
+    
+    dataset_id = google_bigquery_dataset.dataset.id
+    table_id   = "staging_allowed_events_table"
+    description = ""
+
+    schema = <<EOF
+[
+  {
+    "name": "event_id",
+    "type": "INT64",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "event_type",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "repository_id",
+    "type": "INT64",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "repository_name",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "repository_url",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "actor_id",
+    "type": "INT64",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "actor_login",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "actor_url",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "org_id",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "org_login",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "org_url",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "payload_id",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "created_at",
+    "type": "DATETIME",
+    "mode": "REQUIRED",
+    "description": ""
+  }
+]
+EOF
+
+    table_constraints {
+        primary_key  {
+            columns = "event_id"
+        }
+    }
+
+}
+

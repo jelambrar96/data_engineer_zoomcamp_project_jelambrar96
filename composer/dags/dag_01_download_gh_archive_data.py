@@ -22,7 +22,7 @@ import google.oauth2.id_token
 
 URL_CLOUD_FUNCTION = os.environ.get('DOWNLOAD_GH_DATA_CLOUD_FUNCTION')
 START_DATE_STR = os.environ.get('START_DATE', '2024-04-01')
-start_date = datetime.strftime(START_DATE_STR, "%Y-%m-%d")
+start_date = datetime.strptime(START_DATE_STR, "%Y-%m-%d")
 
 function_invoke_cf_download = "download_gh_archive_data"
 # gcp_conn_id = "sa-med-ml"

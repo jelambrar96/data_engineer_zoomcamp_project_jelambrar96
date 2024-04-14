@@ -16,18 +16,18 @@ resource "google_composer_environment" "composer_service" {
       }
 
       env_variables = {
-        START_DATE: "2024-04-01",
+        START_DATE: "2024-04-12",
 
         DATAPROC_MASTER_DISK_SIZE: 512,
         DATAPROC_WORKER_DISK_SIZE: 512,
         DATAPROC_MASTER_MACHINE_TYPE: var.dataproc_master_machine_type,
         DATAPROC_WORKER_MACHINE_TYPE: var.dataproc_worker_machine_type,
         DATAPROC_CLUSTER_NAME: var.dataproc_cluster_name,
-        DATAPROC_PYTHON_SCRIPTS_PATH: "gs://${var.pyspark_repo_bucket_name}",
+        DATAPROC_PYTHON_SCRIPTS_PATH: var.dataproc_python_script_path # "gs://${var.pyspark_repo_bucket_name}",
         DATAPROC_NUM_WORKERS: var.dataproc_num_workers,
         DATAPROC_NUM_MASTERS: var.dataproc_num_masters,
-        DATAPROC_MASTER_DISK_TYPE = var.dataproc_master_disk_type,
-        DATAPROC_WORKER_DISK_TYPE = var.dataproc_worker_disk_type
+        # DATAPROC_MASTER_DISK_TYPE = var.dataproc_master_disk_type,
+        # DATAPROC_WORKER_DISK_TYPE = var.dataproc_worker_disk_type
 
         GOOGLE_CLOUD_PROJECT_ID: var.project,
         GOOGLE_CLOUD_REGION: var.region,

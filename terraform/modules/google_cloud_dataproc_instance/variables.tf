@@ -1,6 +1,6 @@
-variable bucker_tables {
-    description = ""
+variable dataproc_bucket_name { 
     type = string
+    description = ""
 }
 
 variable project {
