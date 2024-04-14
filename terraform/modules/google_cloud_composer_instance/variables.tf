@@ -13,6 +13,41 @@ variable  dataproc_cluster_name {
     type = string    
 }
 
+variable "dataproc_master_disk_type" {
+    description = ""
+    type = string
+}
+
+variable "dataproc_worker_disk_type" {
+    description = ""
+    type = string
+}
+
+variable "dataproc_master_machine_type" {
+    description = ""
+    type = string
+}
+
+variable "dataproc_worker_machine_type" {
+    description = ""
+    type = string
+}
+
+variable dataproc_num_masters {
+    description = ""
+    type = number
+}
+
+variable dataproc_num_workers {
+    description = ""
+    type = number
+}
+
+variable  data_lake_bucket_name {
+    description = ""
+    type = string
+}
+
 variable  data_warehouse_bucket_name {
     description = ""
     type = string
