@@ -1,12 +1,13 @@
 import argparse
+import logging
 
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 
 
-spark = SparkSession.builder.master("yarn")\
-        .appName('GCSFilesRead').getOrCreate()
+# spark = SparkSession.builder.appName('pySparkSetup').getOrCreate()
+spark = SparkSession.builder.master("yarn").appName('GCSFilesRead').getOrCreate()
 
 
 allowed_events = [
@@ -102,26 +103,26 @@ allowed_mergeable_state_type = [
 
 def create_spark_date_time_columns(df, column_based):
     df = df\
-        .withColumn(f"{column_based}_year", F.year("created_at")) \
-        .withColumn(f"{column_based}_month", F.month("created_at")) \
-        .withColumn(f"{column_based}_day", F.dayofmonth("created_at")) \
-        .withColumn(f"{column_based}_hour", F.hour("created_at")) \
-        .withColumn(f"{column_based}_minute", F.minute("created_at")) \
-        .withColumn(f"{column_based}_second", F.second("created_at"))
+        .withColumn(f"{column_based}_year", F.year(column_based)) \
+        .withColumn(f"{column_based}_month", F.month(column_based)) \
+        .withColumn(f"{column_based}_day", F.dayofmonth(column_based)) \
+        .withColumn(f"{column_based}_hour", F.hour(column_based)) \
+        .withColumn(f"{column_based}_minute", F.minute(column_based)) \
+        .withColumn(f"{column_based}_second", F.second(column_based))
     return df
 
 
-def save_spark_dataframe(df, date, write_filepath):
+def save_spark_dataframe(df, date_str, write_filepath):
 
     df.write \
-    .partitionBy("year", "month", "day") \
-    .bucketBy(24, "hour") \
-    .sortBy("created_at") \
+    .partitionBy("created_at_year", "created_at_month", "created_at_day") \
+    .bucketBy(24, "created_at_hour") \
+    .sortBy("created_at_hour", "created_at_minute") \
     .option("path", write_filepath) \
     .option("header", True) \
     .option("format", "parquet") \
     .mode("append") \
-    .saveAsTable(f"table_events_{date}")
+    .saveAsTable(f"table_events_{date_str}")
 
 
 # -----------------------------------------------------------------------------
@@ -129,9 +130,7 @@ def save_spark_dataframe(df, date, write_filepath):
 # -----------------------------------------------------------------------------
 def process_data_allowed_events_spark(df, date, write_filepath):
     
-    main_df = df\
-        .withColumn("id", F.col("id").cast(T.IntegerType()))\
-        .select(
+    main_df = df.select(
             F.col("id").alias("event_id"),
             F.col("type").alias("event_type"),
             F.col("repo.id").alias("repository_id"),
@@ -143,12 +142,13 @@ def process_data_allowed_events_spark(df, date, write_filepath):
             F.col("org.id").alias("org_id"),
             F.col("org.login").alias("org_login"),
             F.col("org.url").alias("org_url"),
-            F.col("payload.id").alias("payload_id"),
             # F.col("payload.push_id").alias("push_id"),
             # F.col("payload.distinct_size").alias("number_of_commits"),
             # F.col("payload.pull_request.base.repo.language").alias("language"),
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),
         )
+    
+    # main_df = main_df.withColumn("id", F.col("id").cast(T.IntegerType()))
 
     main_df = create_spark_date_time_columns(main_df, "created_at")
     save_spark_dataframe(main_df, date, write_filepath)
@@ -622,15 +622,37 @@ def process_data_pull_requests_comment_events_spark(df, date, write_filepath):
 # -----------------------------------------------------------------------------
 def main(date, read_filepath, destination_bucket):
 
+    logging.info("Inside main function")
+    logging.info("arguments:")
+    logging.info(date)
+    logging.info(read_filepath)
+    logging.info(destination_bucket)
+
+    logging.info("Creating read filepath")
+    read_filepath_str = read_filepath.format(date)
+    logging.info(read_filepath_str)
+
     date_str = date.replace("-", "")
-    df = spark.read.json(read_filepath)
+
+    logging.info("reading files")
+    df = spark.read.json(read_filepath_str)
+
+    assert df.count() > 0, "ERROR: df.count() > 0"
+    assert len(df.columns) > 0, "ERROR: len(df.columns) > 0"
 
     # common processing for all tables
-    df = df\
-        .filter(F.col("type").isin(allowed_events))
+    logging.info("filtering file")
+    df = df.filter(F.col("type").isin(allowed_events))
+    df = df.withColumn("id", F.col("id").cast(T.IntegerType())).filter(F.col("id").isNotNull())
 
-    write_filepath = f"gs://${destination_bucket}/gh-archives/processed/allowed_events"
+    # -----------------------------------------------------------------------------
+    # ALLOWED EVENTS
+    # -----------------------------------------------------------------------------
+    
+    write_filepath = f"gs://${destination_bucket}/gh-archives/processed/allowed_events/"
     process_data_allowed_events_spark(df=df, date=date_str, write_filepath=write_filepath)
+
+    # -----------------------------------------------------------------------------
 
     return
 
@@ -685,8 +707,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     date = args.date
-    read_filepath = args.source_files_pattern
-    destination_bucket = args.destination_files_pattern
+    read_filepath = args.source
+    destination_bucket = args.destination
     main(date, read_filepath, destination_bucket)
 
 # -----------------------------------------------------------------------------

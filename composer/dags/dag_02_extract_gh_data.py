@@ -14,7 +14,7 @@ from airflow.contrib.operators.bigquery_check_operator import BigQueryCheckOpera
 
 
 START_DATE_STR = os.environ.get('START_DATE', '2024-04-01')
-start_date = datetime.strftime(START_DATE_STR, "%Y-%m-%d")
+start_date = datetime.strptime(START_DATE_STR, "%Y-%m-%d") + timedelta(days=1)
 
 
 GOOGLE_CLOUD_PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT_ID")
@@ -28,15 +28,17 @@ GOOGLE_CLOUD_DATALAKE_BUCKET = os.environ.get("GOOGLE_CLOUD_DATALAKE_BUCKET")
 GOOGLE_CLOUD_STORAGE_SOURCE_FILES = os.environ.get("GOOGLE_CLOUD_STORAGE_SOURCE_FILES")
 GOOGLE_CLOUD_STORAGE_DESTINATION_FILES = os.environ.get("GOOGLE_CLOUD_STORAGE_DESTINATION_FILES")
 
+# DATAPROC_PYTHON_SCRIPTS_PATH = os.environ.get("DATAPROC_PYTHON_SCRIPTS_PATH") 
+DATAPROC_PYTHON_SCRIPTS_PATH = "gs://jelambrar96-zoomcamp-20240331-dataproc-bucket/dataproc_01_extract_gh_data.py"
 
 DATAPROC_CLUSTER_NAME = os.environ.get("DATAPROC_CLUSTER_NAME")
-DATAPROC_PYTHON_SCRIPTS_PATH = os.environ.get("DATAPROC_PYTHON_SCRIPTS_PATH")
+
 DATAPROC_MASTER_MACHINE_TYPE = os.environ.get("DATAPROC_MASTER_MACHINE_TYPE")
 DATAPROC_WORKER_MACHINE_TYPE = os.environ.get("DATAPROC_WORKER_MACHINE_TYPE")
 DATAPROC_MASTER_DISK_SIZE = int(os.environ.get("DATAPROC_MASTER_DISK_SIZE"))
 DATAPROC_WORKER_DISK_SIZE = int(os.environ.get("DATAPROC_WORKER_DISK_SIZE"))
-DATAPROC_MASTER_DISK_TYPE = os.environ.get("DATAPROC_MASTER_DISK_TYPE")
-DATAPROC_WORKER_DISK_TYPE = os.environ.get("DATAPROC_WORKER_DISK_TYPE")
+# DATAPROC_MASTER_DISK_TYPE = os.environ.get("DATAPROC_MASTER_DISK_TYPE")
+# DATAPROC_WORKER_DISK_TYPE = os.environ.get("DATAPROC_WORKER_DISK_TYPE")
 DATAPROC_NUM_WORKERS = int(os.environ.get("DATAPROC_NUM_WORKERS"))
 DATAPROC_NUM_MASTERS = int(os.environ.get("DATAPROC_NUM_MASTERS"))
 
@@ -44,13 +46,14 @@ DATAPROC_NUM_MASTERS = int(os.environ.get("DATAPROC_NUM_MASTERS"))
 # Define pyspark job parameters
 dataproc_job = {
     "reference": {"project_id": GOOGLE_CLOUD_PROJECT_ID},
-    "placement": {"cluster_name": GOOGLE_CLOUD_STORAGE_BUCKET},
+    # "placement": {"cluster_name": GOOGLE_CLOUD_STORAGE_BUCKET},
+    "placement": {"cluster_name": DATAPROC_CLUSTER_NAME},
     "pyspark_job": {
-        "main_python_file_uri": f"{DATAPROC_PYTHON_SCRIPTS_PATH}/dataproc_01_extract_gh_data.py",
+        "main_python_file_uri": DATAPROC_PYTHON_SCRIPTS_PATH, # f"{DATAPROC_PYTHON_SCRIPTS_PATH}/dataproc_01_extract_gh_data.py",
         "args": [
             "--date", "{{ prev_ds }}",
             "--source", GOOGLE_CLOUD_STORAGE_SOURCE_FILES,
-            "--destination", GOOGLE_CLOUD_STORAGE_DESTINATION_FILES,
+            "--destination", GOOGLE_CLOUD_DATAWAREHOUSE_BUCKET,
         ]
     }
 }
@@ -69,8 +72,8 @@ cluster_generator = ClusterGenerator(
     worker_machine_type=DATAPROC_WORKER_MACHINE_TYPE,
     master_disk_size=DATAPROC_MASTER_DISK_SIZE,
     worker_disk_size=DATAPROC_WORKER_DISK_SIZE,
-    master_disk_type=DATAPROC_MASTER_DISK_TYPE,
-    worker_disk_type=DATAPROC_MASTER_DISK_TYPE,
+    # master_disk_type=DATAPROC_MASTER_DISK_TYPE,
+    # worker_disk_type=DATAPROC_MASTER_DISK_TYPE,
 ).make()
 
 
@@ -90,14 +93,14 @@ with DAG(
     task_start = EmptyOperator(task_id='task_start', dag=dag)
     task_end = EmptyOperator(task_id='task_end', dag=dag)
 
-    task_create_cluster = DataprocCreateClusterOperator(
-            task_id="task_create_cluster",
-            dag=dag,
-            project_id=GOOGLE_CLOUD_PROJECT_ID,
-            cluster_config=cluster_generator,
-            region=GOOGLE_CLOUD_REGION,
-            cluster_name=DATAPROC_CLUSTER_NAME,
-        )
+    # task_create_cluster = DataprocCreateClusterOperator(
+    #     task_id="task_create_cluster",
+    #     dag=dag,
+    #     project_id=GOOGLE_CLOUD_PROJECT_ID,
+    #     cluster_config=cluster_generator,
+    #     region=GOOGLE_CLOUD_REGION,
+    #     cluster_name=DATAPROC_CLUSTER_NAME,
+    # )
 
     task_pyspark_run_job = DataprocSubmitJobOperator(
         task_id="task_pyspark_run_job",
@@ -107,21 +110,22 @@ with DAG(
         project_id=GOOGLE_CLOUD_PROJECT_ID,
     )
 
+    # task_delete_cluster = DataprocDeleteClusterOperator(
+    #     task_id="task_delete_cluster",
+    #     dag=dag,
+    #     project_id=GOOGLE_CLOUD_PROJECT_ID,
+    #     cluster_name=DATAPROC_CLUSTER_NAME,
+    #     region=GOOGLE_CLOUD_REGION,
+    # )
+
     task_check_bigquery = BigQueryCheckOperator(
         task_id="task_check_bigquery",
         sql="""SELECT 1""",
         use_legacy_sql=False,
         dag=dag,
-        region=GOOGLE_CLOUD_REGION
-    )
-
-    task_delete_cluster = DataprocDeleteClusterOperator(
-        task_id="task_delete_cluster",
-        dag=dag,
-        project_id=GOOGLE_CLOUD_PROJECT_ID,
-        cluster_name=DATAPROC_CLUSTER_NAME,
-        region=GOOGLE_CLOUD_REGION,
+        location=GOOGLE_CLOUD_REGION,
     )
 
 
-task_start >> task_create_cluster >> task_pyspark_run_job >> task_delete_cluster >> task_check_bigquery >> task_end
+# task_start >> task_create_cluster >> task_pyspark_run_job >> task_delete_cluster >> task_check_bigquery >> task_end
+task_start >>  task_pyspark_run_job >>  task_check_bigquery >> task_end
