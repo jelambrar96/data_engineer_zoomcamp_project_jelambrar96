@@ -1,0 +1,15 @@
+id,name
+1,CommitCommentEvent
+2,CreateEvent
+3,DeleteEvent
+4,ForkEvent
+5,IssueCommentEvent
+6,IssuesEvent
+7,MemberEvent
+8,PublicEvent
+9,PullRequestEvent
+10,PullRequestReviewCommentEvent
+11,PullRequestReviewEvent
+12,PushEvent
+13,ReleaseEvent
+14,WatchEvent
