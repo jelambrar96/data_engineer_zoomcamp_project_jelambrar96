@@ -1,7 +1,6 @@
-
 # Create composer Environment
 resource "google_composer_environment" "composer_service" {
-  name   = "${var.project}-composer-env"
+  name   = "${var.project}-composer"
   project = var.project
   region = var.region
   
@@ -16,7 +15,9 @@ resource "google_composer_environment" "composer_service" {
       }
 
       env_variables = {
-        START_DATE: "2024-04-12",
+        START_DATE: "2024-04-01",
+
+        BIGQUERY_DATASET_ID = var.bigquery_dataset_id,
 
         DATAPROC_MASTER_DISK_SIZE: 512,
         DATAPROC_WORKER_DISK_SIZE: 512,
