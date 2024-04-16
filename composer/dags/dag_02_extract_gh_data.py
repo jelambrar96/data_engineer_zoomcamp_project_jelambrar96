@@ -133,74 +133,75 @@ with DAG(
         location=GOOGLE_CLOUD_REGION,
     )
 
-    query_staging_to_dim_users = """
-    INSERT INTO dimentional_user_table (user_id, user_name, user_url)
-    SELECT actor_id AS user_id, actor_login AS user_name, actor_url AS user_url
-    FROM `{{ GOOGLE_CLOUD_PROJECT_ID }}.{{ BIGQUERY_DATASET_ID }}.external_table_allowed_events`
-    WHERE created_at_date >= '{{ prev_ds }}' AND created_at_date < '{{ ds }}' 
-    AND actor_id NOT IN (
-        SELECT user_id
-        FROM `{{ GOOGLE_CLOUD_PROJECT_ID }}.{{ BIGQUERY_DATASET_ID }}.dimentional_user_table`
-    )
-    """
-    task_staging_to_dim_users = BigQueryInsertJobOperator(
-        task_id="task_staging_to_dim_users",  
-        configuration={
-            "query": {
-                "query": query_staging_to_dim_users,
-                "useLegacySql": False
-            }
-        },
-        dag=dag,
-    )
+    # query_staging_to_dim_users = """
+    # INSERT INTO dimentional_user_table (user_id, user_name, user_url)
+    # SELECT actor_id AS user_id, actor_login AS user_name, actor_url AS user_url
+    # FROM `{{ GOOGLE_CLOUD_PROJECT_ID }}.{{ BIGQUERY_DATASET_ID }}.external_table_allowed_events`
+    # WHERE created_at_date >= '{{ prev_ds }}' AND created_at_date < '{{ ds }}' 
+    # AND actor_id NOT IN (
+    #     SELECT user_id
+    #     FROM `{{ GOOGLE_CLOUD_PROJECT_ID }}.{{ BIGQUERY_DATASET_ID }}.dimentional_user_table`
+    # )
+    # """
+    # task_staging_to_dim_users = BigQueryInsertJobOperator(
+    #     task_id="task_staging_to_dim_users",  
+    #     configuration={
+    #         "query": {
+    #             "query": query_staging_to_dim_users,
+    #             "useLegacySql": False
+    #         }
+    #     },
+    #     dag=dag,
+    # )
 
-    query_staging_to_dim_repository = """
-    INSERT INTO dimentional_repository_table (repository_id, repository_name, repository_url)
-    SELECT repository_id, repository_name, repository_url
-    FROM `{{ GOOGLE_CLOUD_PROJECT_ID }}.{{ BIGQUERY_DATASET_ID }}.external_table_allowed_events`
-    WHERE created_at_date >= '{{ prev_ds }}' AND created_at_date < '{{ ds }}' 
-    AND actor_id NOT IN (
-        SELECT repository_id
-        FROM `{{ GOOGLE_CLOUD_PROJECT_ID }}.{{ BIGQUERY_DATASET_ID }}.dimentional_repository_table`
-    )
-    """
-    task_staging_to_dim_repository = BigQueryInsertJobOperator(
-        task_id="task_staging_to_dim_repository",  
-        configuration={
-            "query": {
-                "query": query_staging_to_dim_repository,
-                "useLegacySql": False
-            }
-        },
-        dag=dag,
-    )
+    # query_staging_to_dim_repository = """
+    # INSERT INTO dimentional_repository_table (repository_id, repository_name, repository_url)
+    # SELECT repository_id, repository_name, repository_url
+    # FROM `{{ GOOGLE_CLOUD_PROJECT_ID }}.{{ BIGQUERY_DATASET_ID }}.external_table_allowed_events`
+    # WHERE created_at_date >= '{{ prev_ds }}' AND created_at_date < '{{ ds }}' 
+    # AND actor_id NOT IN (
+    #     SELECT repository_id
+    #     FROM `{{ GOOGLE_CLOUD_PROJECT_ID }}.{{ BIGQUERY_DATASET_ID }}.dimentional_repository_table`
+    # )
+    # """
+    # task_staging_to_dim_repository = BigQueryInsertJobOperator(
+    #     task_id="task_staging_to_dim_repository",  
+    #     configuration={
+    #         "query": {
+    #             "query": query_staging_to_dim_repository,
+    #             "useLegacySql": False
+    #         }
+    #     },
+    #     dag=dag,
+    # )
 
-    query_staging_to_dim_organization = """
-    INSERT INTO dimentional_organization_table (organization_id, organization_name, organization_url)
-    SELECT organization_id, organization_name, organization_url
-    FROM `{{ GOOGLE_CLOUD_PROJECT_ID }}.{{ BIGQUERY_DATASET_ID }}.external_table_allowed_events`
-    WHERE created_at_date >= '{{ prev_ds }}' AND created_at_date < '{{ ds }}' 
-    AND actor_id NOT IN (
-        SELECT organization_id
-        FROM `{{ GOOGLE_CLOUD_PROJECT_ID }}.{{ BIGQUERY_DATASET_ID }}.dimentional_organization_table`
-    )
-    """
-    task_staging_to_dim_organization = BigQueryInsertJobOperator(
-        task_id="task_staging_to_dim_organization",  
-        configuration={
-            "query": {
-                "query": query_staging_to_dim_organization,
-                "useLegacySql": False
-            }
-        },
-        dag=dag,
-    )
+    # query_staging_to_dim_organization = """
+    # INSERT INTO dimentional_organization_table (organization_id, organization_name, organization_url)
+    # SELECT organization_id, organization_name, organization_url
+    # FROM `{{ GOOGLE_CLOUD_PROJECT_ID }}.{{ BIGQUERY_DATASET_ID }}.external_table_allowed_events`
+    # WHERE created_at_date >= '{{ prev_ds }}' AND created_at_date < '{{ ds }}' 
+    # AND actor_id NOT IN (
+    #     SELECT organization_id
+    #     FROM `{{ GOOGLE_CLOUD_PROJECT_ID }}.{{ BIGQUERY_DATASET_ID }}.dimentional_organization_table`
+    # )
+    # """
+    # task_staging_to_dim_organization = BigQueryInsertJobOperator(
+    #     task_id="task_staging_to_dim_organization",  
+    #     configuration={
+    #         "query": {
+    #             "query": query_staging_to_dim_organization,
+    #             "useLegacySql": False
+    #         }
+    #     },
+    #     dag=dag,
+    # )
 
 
 
 # task_start >> task_create_cluster >> task_pyspark_run_job >> task_delete_cluster >> task_check_bigquery >> task_end
-# task_start >>  task_pyspark_run_job >>  task_check_bigquery >> task_query_staging >> task_end
-task_start >>  task_pyspark_run_job >>  task_check_bigquery 
-task_check_bigquery >> task_staging_to_dim_users >> task_end
-task_check_bigquery >> task_staging_to_dim_repository >> task_end
-task_check_bigquery >> task_staging_to_dim_organization >> task_end
+task_start >>  task_pyspark_run_job >>  task_check_bigquery >> task_query_staging >> task_end
+
+# task_start >>  task_pyspark_run_job >>  task_check_bigquery 
+# task_check_bigquery >> task_staging_to_dim_users >> task_end
+# task_check_bigquery >> task_staging_to_dim_repository >> task_end
+# task_check_bigquery >> task_staging_to_dim_organization >> task_end
