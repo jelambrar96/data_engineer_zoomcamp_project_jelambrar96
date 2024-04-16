@@ -1,4 +1,4 @@
-variable bucker_tables {
+variable bucket_tables {
     description = ""
     type = string
 }

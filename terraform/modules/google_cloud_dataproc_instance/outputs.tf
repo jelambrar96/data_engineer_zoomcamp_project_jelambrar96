@@ -28,8 +28,8 @@ output "dataproc_num_workers_instances" {
 }
 
 output "dataproc_python_script_link" {
-    # value = google_storage_bucket_object.pyspark_repo_archive.media_link
-    value = "gs//${var.dataproc_bucket_name}/dataproc_01_extract_gh_data.py"
+    value = google_storage_bucket_object.pyspark_repo_archive.self_link
+    # value = "gs//${var.dataproc_bucket_name}/dataproc_01_extract_gh_data.py"
 }
 
 # Check out current state of the jobs

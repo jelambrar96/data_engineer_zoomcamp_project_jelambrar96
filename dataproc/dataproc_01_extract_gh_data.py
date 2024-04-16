@@ -102,28 +102,33 @@ allowed_mergeable_state_type = [
 
 
 def create_spark_date_time_columns(df, column_based):
-    df = df\
-        .withColumn(f"{column_based}_year", F.year(column_based)) \
-        .withColumn(f"{column_based}_month", F.month(column_based)) \
-        .withColumn(f"{column_based}_day", F.dayofmonth(column_based)) \
-        .withColumn(f"{column_based}_hour", F.hour(column_based)) \
-        .withColumn(f"{column_based}_minute", F.minute(column_based)) \
-        .withColumn(f"{column_based}_second", F.second(column_based))
+    df = df.withColumn("{column_based}_date", F.to_date(F.col(column_based)))
     return df
 
 
 def save_spark_dataframe(df, date_str, write_filepath):
 
-    df.write \
-    .partitionBy("created_at_year", "created_at_month", "created_at_day") \
-    .bucketBy(24, "created_at_hour") \
-    .sortBy("created_at_hour", "created_at_minute") \
-    .option("path", write_filepath) \
-    .option("header", True) \
-    .option("format", "parquet") \
-    .mode("append") \
-    .saveAsTable(f"table_events_{date_str}")
 
+    # df.write\
+    #     .option("header",True)\
+    #     .option("delimiter",",")\
+    #     .mode("append")\
+    #     .csv("{}/table_{}.csv".format(write_filepath, date_str))
+
+
+    df.write\
+    .partitionBy("created_at_date")\
+    .option("header", True)\
+    .mode("append")\
+    .parquet(write_filepath)
+
+    # df.write\
+    # .partitionBy("created_at_year", "created_at_month", "created_at_day")\
+    # .bucketBy(24, "created_at_hour")\
+    # .sortBy("created_at_hour", "created_at_minute")\
+    # .option("header", True)\
+    # .mode("append")\
+    # .parquet(write_filepath)
 
 # -----------------------------------------------------------------------------
 #
@@ -150,8 +155,12 @@ def process_data_allowed_events_spark(df, date, write_filepath):
     
     # main_df = main_df.withColumn("id", F.col("id").cast(T.IntegerType()))
 
-    main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(main_df, date, write_filepath)
+    main_df = main_df.withColumn("created_at_date", F.to_date(F.col("created_at")))
+    main_df.write\
+        .partitionBy("created_at_date")\
+        .option("header", True)\
+        .mode("append")\
+        .parquet(write_filepath)
 
 
 # -----------------------------------------------------------------------------
@@ -643,53 +652,53 @@ def main(date, read_filepath, destination_bucket):
     # common processing for all tables
     logging.info("filtering file")
     df = df.filter(F.col("type").isin(allowed_events))
-    df = df.withColumn("id", F.col("id").cast(T.IntegerType())).filter(F.col("id").isNotNull())
+    # df = df.withColumn("id", F.col("id").cast(T.IntegerType()))
 
     # -----------------------------------------------------------------------------
     # ALLOWED EVENTS
     # -----------------------------------------------------------------------------
     
-    write_filepath = f"gs://${destination_bucket}/gh-archives/processed/allowed_events/"
+    write_filepath = f"gs://{destination_bucket}/gh-archives/processed/allowed_events/"
     process_data_allowed_events_spark(df=df, date=date_str, write_filepath=write_filepath)
 
     # -----------------------------------------------------------------------------
 
     return
 
-    write_filepath_commits_events = f"gs://${destination_bucket}/gh-archives/processed/commits_events"
+    write_filepath_commits_events = f"gs://{destination_bucket}/gh-archives/processed/commits_events"
     process_data_commit_events_spark(df=df, date=date_str, write_filepath=write_filepath_commits_events)
 
-    write_filepath_push_events = f"gs://${destination_bucket}/gh-archives/processed/push_events"
+    write_filepath_push_events = f"gs://{destination_bucket}/gh-archives/processed/push_events"
     process_data_push_events_spark(df=df, date=date_str, write_filepath=write_filepath_push_events)
 
-    write_file_path_release = f"gs://${destination_bucket}/gh-archives/processed/release_events"
+    write_file_path_release = f"gs://{destination_bucket}/gh-archives/processed/release_events"
     process_data_release_events_spark(df=df, date=date_str, write_filepath=write_file_path_release)
 
-    write_file_path_delete = f"gs://${destination_bucket}/gh-archives/processed/delete_events"
+    write_file_path_delete = f"gs://{destination_bucket}/gh-archives/processed/delete_events"
     process_data_delete_events_spark(df=df, date=date_str, write_filepath=write_file_path_delete)
 
-    write_file_path_member = f"gs://${destination_bucket}/gh-archives/processed/member_events"
+    write_file_path_member = f"gs://{destination_bucket}/gh-archives/processed/member_events"
     process_data_member_events_spark(df=df, date=date_str, write_filepath=write_file_path_member)
 
-    write_file_fork_events = f"gs://${destination_bucket}/gh-archives/processed/fork_events"
+    write_file_fork_events = f"gs://{destination_bucket}/gh-archives/processed/fork_events"
     process_data_fork_events_spark(df=df, date=date_str, write_filepath=write_file_fork_events)
 
-    write_file_create_events = f"gs://${destination_bucket}/gh-archives/processed/create_events"
+    write_file_create_events = f"gs://{destination_bucket}/gh-archives/processed/create_events"
     process_data_create_events_spark(df=df, date=date_str, write_filepath=write_file_create_events)
 
-    write_file_pull_issue_events = f"gs://${destination_bucket}/gh-archives/processed/issue_event"
+    write_file_pull_issue_events = f"gs://{destination_bucket}/gh-archives/processed/issue_event"
     process_data_issue_events_spark(df=df, date=date_str, write_filepath=write_file_pull_issue_events)
 
-    write_file_pull_issue_comment_events = f"gs://${destination_bucket}/gh-archives/processed/issue_comment_event"
+    write_file_pull_issue_comment_events = f"gs://{destination_bucket}/gh-archives/processed/issue_comment_event"
     process_data_issue_comment_events_spark(df=df, date=date_str, write_filepath=write_file_pull_issue_comment_events)
 
-    write_file_pull_requests_events = f"gs://${destination_bucket}/gh-archives/processed/pull_requests_events"
+    write_file_pull_requests_events = f"gs://{destination_bucket}/gh-archives/processed/pull_requests_events"
     process_data_pull_requests_events_spark(df=df, date=date_str, write_filepath=write_file_pull_requests_events)
 
-    write_file_pull_requests_review = f"gs://${destination_bucket}/gh-archives/processed/pull_requests_review_events"
+    write_file_pull_requests_review = f"gs://{destination_bucket}/gh-archives/processed/pull_requests_review_events"
     process_data_pull_requests_review_events_spark(df=df, date=date_str, write_filepath=write_file_pull_requests_review)
 
-    write_file_pull_requests_comment_events = f"gs://${destination_bucket}/gh-archives/processed/pull_requests_comment_events"
+    write_file_pull_requests_comment_events = f"gs://{destination_bucket}/gh-archives/processed/pull_requests_comment_events"
     process_data_pull_requests_comment_events_spark(df=df, date=date_str, write_filepath=write_file_pull_requests_comment_events)
 
 # -----------------------------------------------------------------------------

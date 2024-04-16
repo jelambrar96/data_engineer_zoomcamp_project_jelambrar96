@@ -1,3 +1,8 @@
+variable bigquery_dataset_id {
+    description = ""
+    type = string
+}
+
 variable  cloud_fuction_link {
     description = ""
     type = string
