@@ -197,9 +197,9 @@ with DAG(
     # )
 
 
-
+task_start >>  task_pyspark_run_job >>  task_check_bigquery >> task_end
+# task_start >>  task_pyspark_run_job >>  task_check_bigquery >> task_query_staging >> task_end
 # task_start >> task_create_cluster >> task_pyspark_run_job >> task_delete_cluster >> task_check_bigquery >> task_end
-task_start >>  task_pyspark_run_job >>  task_check_bigquery >> task_query_staging >> task_end
 
 # task_start >>  task_pyspark_run_job >>  task_check_bigquery 
 # task_check_bigquery >> task_staging_to_dim_users >> task_end
