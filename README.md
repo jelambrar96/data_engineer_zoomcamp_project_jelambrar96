@@ -157,9 +157,9 @@ Create a service account and assign roles.
 ![](media/genrate_key_service_account.png)
 - Select the key type (JSON or P12) and click on the "Create" button. This will generate a new service account key.
 ![](media/key_service_account.png)
-- Download the key file (JSON) securely. Store key file inside `terraform/keys` directory. You can rename the file to `creddentials.json` or create a symbolic link.
+- Download the key file (JSON) securely. Store key file inside `terraform/keys` directory. You can rename the file to `credentials.json` or create a symbolic link.
 ```bash
-ln -s terraform/keys/creddentials.json /path/to/file.json
+ln -s terraform/keys/credentials.json /path/to/file.json
 ```
 
 
@@ -188,7 +188,7 @@ zone="YOUR-ZONE"
 
 #### 5.2 Add Google Credentials
 
-Remember that your creddentials GPC json key file can be store on `terraform/keys` directory with the name `creddentials.json`   
+Remember that your creddentials GPC json key file can be store on `terraform/keys` directory with the name `credentials.json`   
 
 ### Step 6. Execute terraform 
 
