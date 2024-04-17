@@ -159,7 +159,7 @@ Create a service account and assign roles.
 ![](media/key_service_account.png)
 - Download the key file (JSON) securely. Store key file inside `terraform/keys` directory. You can rename the file to `credentials.json` or create a symbolic link.
 ```bash
-ln -s terraform/keys/credentials.json /path/to/file.json
+ln -s path/to/file.json terraform/keys/credentials.json
 ```
 
 
