@@ -4,7 +4,13 @@ In the modern world, where digital platforms generate vast amounts of data every
 
 ## Problem Description and Solution
 
+### Problem Statement
+
+Analyzing a large volume of data from GitHub, as available on https://www.gharchive.org/, poses significant challenges due to the high volume of information continuously being produced. Traditional analysis methods using a single Python script on a local machine are inadequate due to the need for high computing resources, including CPU, disk space, and RAM.
+
 For this project, the focus is on gharchive.org's comprehensive dataset capturing the myriad events that occur on the GitHub platform. Due to its substantial size, employing data engineering techniques becomes imperative. These techniques allow for the effective handling and processing of the data to distill valuable insights.
+
+### Project Objectives 
 
 The primary objective of this project is to ascertain the most common event type generated on the GitHub platform, and to analyze the event behavior over time. Understanding these dynamics not only provides insights into GitHub's usage patterns but also aids in optimizing platform engagement strategies, making data engineering an essential tool in this analysis.
 
@@ -12,7 +18,7 @@ Specifically, the project aims to ascertain the most common event type generated
 
 ## Solution Infrastructure
 
-This project utilizes a host of cloud computing technologies to address the significant challenge of processing gigantic datasets efficiently The project utilizes a suite of Cloud Computing Technologies for efficient data processing due to their scalability, reliability, and performance benefits. 
+This project utilizes a host of cloud computing technologies to address the significant challenge of processing gigantic datasets efficiently. The project utilizes a suite of Cloud Computing Technologies for efficient data processing due to their scalability, reliability, and performance benefits, for example, utilizing data engineering tools like Apache Hadoop and Spark allows for efficient data processing and analysis, additionally, Google BigQuery can serve as a powerful data warehousing solution, providing insights at high speed. 
 
 ![](media/zoomcamp.drawio.png)
 
