@@ -248,4 +248,6 @@ IMPORTANT: You need add created_at_date filter to this plot.
 
 ------------
 
-Made with :hear: by [@jelambrar96](https://github.com/jelambrar96) :floppy_disk:
+Made with :heart: by [@jelambrar96](https://github.com/jelambrar96) :floppy_disk:
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/jelambrar1)
