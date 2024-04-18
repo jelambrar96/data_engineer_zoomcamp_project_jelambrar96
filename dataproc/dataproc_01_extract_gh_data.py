@@ -106,29 +106,21 @@ def create_spark_date_time_columns(df, column_based):
     return df
 
 
-def save_spark_dataframe(df, date_str, write_filepath):
+def read_spark_dataframes(pattern_filepath):
+    df = None
+    try:
+        df = spark.read.json(pattern_filepath)
+    except:
+        pass
+    return df
 
 
-    # df.write\
-    #     .option("header",True)\
-    #     .option("delimiter",",")\
-    #     .mode("append")\
-    #     .csv("{}/table_{}.csv".format(write_filepath, date_str))
-
-
+def save_spark_dataframe(df, write_filepath):
     df.write\
     .partitionBy("created_at_date")\
     .option("header", True)\
     .mode("append")\
     .parquet(write_filepath)
-
-    # df.write\
-    # .partitionBy("created_at_year", "created_at_month", "created_at_day")\
-    # .bucketBy(24, "created_at_hour")\
-    # .sortBy("created_at_hour", "created_at_minute")\
-    # .option("header", True)\
-    # .mode("append")\
-    # .parquet(write_filepath)
 
 # -----------------------------------------------------------------------------
 #
@@ -153,15 +145,8 @@ def process_data_allowed_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),
         )
     
-    # main_df = main_df.withColumn("id", F.col("id").cast(T.IntegerType()))
-
-    main_df = main_df.withColumn("created_at_date", F.to_date(F.col("created_at")))
-    main_df.write\
-        .partitionBy("created_at_date")\
-        .option("header", True)\
-        .mode("append")\
-        .parquet(write_filepath)
-
+    main_df = create_spark_date_time_columns(df=main_df, column_based="created_at")
+    save_spark_dataframe(main_df, write_filepath)
 
 # -----------------------------------------------------------------------------
 
@@ -194,7 +179,7 @@ def process_data_commit_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at")          
         )
     commit_df = create_spark_date_time_columns(commit_df, "created_at")
-    save_spark_dataframe(df=commit_df, date=date, write_filepath=write_filepath)
+    save_spark_dataframe(df=commit_df, write_filepath=write_filepath)
 # -----------------------------------------------------------------------------
 
 
@@ -217,7 +202,7 @@ def process_data_push_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),        
         )
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, date=date, write_filepath=write_filepath)
+    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
 # -----------------------------------------------------------------------------
 
 
@@ -241,7 +226,7 @@ def process_data_commit_comment_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),        
         )
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, date=date, write_filepath=write_filepath)
+    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
 # -----------------------------------------------------------------------------
 
 
@@ -270,7 +255,7 @@ def process_data_release_events_spark(df, date, write_filepath):
     main_df = create_spark_date_time_columns(main_df, "created_at")
     main_df = create_spark_date_time_columns(main_df, "release_created_at")
     main_df = create_spark_date_time_columns(main_df, "release_published_at")
-    save_spark_dataframe(df=main_df, date=date, write_filepath=write_filepath)
+    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
 # -----------------------------------------------------------------------------
 
 
@@ -290,7 +275,7 @@ def process_data_delete_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),        
         )
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, date=date, write_filepath=write_filepath)
+    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
@@ -312,7 +297,7 @@ def process_data_member_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),        
         )
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, date=date, write_filepath=write_filepath)
+    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
 # -----------------------------------------------------------------------------
 
 
@@ -367,7 +352,7 @@ def process_data_fork_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),        
         )
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, date=date, write_filepath=write_filepath)
+    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
 # -----------------------------------------------------------------------------
 
 
@@ -388,7 +373,7 @@ def process_data_create_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),        
         )
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, date=date, write_filepath=write_filepath)
+    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
 # -----------------------------------------------------------------------------
 
 
@@ -438,7 +423,7 @@ def process_data_issue_events_spark(df, date, write_filepath):
     main_df = create_spark_date_time_columns(main_df, "issue_closed_at")
 
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, date=date, write_filepath=write_filepath)
+    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
 
 # -----------------------------------------------------------------------------
 
@@ -465,7 +450,7 @@ def process_data_issue_comment_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),        
         )
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, date=date, write_filepath=write_filepath)
+    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
 
 
 
@@ -542,7 +527,7 @@ def process_data_pull_requests_events_spark(df, date, write_filepath):
     main_df = create_spark_date_time_columns(main_df, "pull_request_merged_at")
 
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, date=date, write_filepath=write_filepath)
+    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
 # -----------------------------------------------------------------------------
 
 
@@ -575,7 +560,7 @@ def process_data_pull_requests_review_events_spark(df, date, write_filepath):
     
     main_df = create_spark_date_time_columns(main_df, "review_submitted_at")
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, date=date, write_filepath=write_filepath)
+    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
 # -----------------------------------------------------------------------------
 
 
@@ -623,7 +608,7 @@ def process_data_pull_requests_comment_events_spark(df, date, write_filepath):
     main_df = create_spark_date_time_columns(main_df, "comment_updated_at")
     main_df = create_spark_date_time_columns(main_df, "created_at")
     
-    save_spark_dataframe(df=main_df, date=date, write_filepath=write_filepath)
+    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
@@ -644,7 +629,8 @@ def main(date, read_filepath, destination_bucket):
     date_str = date.replace("-", "")
 
     logging.info("reading files")
-    df = spark.read.json(read_filepath_str)
+    # df = spark.read.json(read_filepath_str)
+    df = read_spark_dataframes(pattern_filepath=read_filepath_str)
 
     assert df.count() > 0, "ERROR: df.count() > 0"
     assert len(df.columns) > 0, "ERROR: len(df.columns) > 0"
