@@ -15,3 +15,7 @@ variable zone {
     type = string
 }
 
+variable "credential_file" {
+    description = ""
+    type=string
+}
