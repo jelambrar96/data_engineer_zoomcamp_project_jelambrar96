@@ -5,10 +5,26 @@ from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 
+from google.cloud.dlp_v2.types.storage import CloudStorageRegexFileSet
 
 # spark = SparkSession.builder.appName('pySparkSetup').getOrCreate()
 spark = SparkSession.builder.master("yarn").appName('GCSFilesRead').getOrCreate()
 
+VALID_FUNCTION_NAMES = [
+    "process_data_allowed_events_spark",
+    "process_data_commit_events_spark",
+    "process_data_push_events_spark",
+    "process_data_release_events_spark",
+    "process_data_delete_events_spark",
+    "process_data_member_events_spark",
+    "process_data_fork_events_spark",
+    "process_data_create_events_spark",
+    "process_data_issue_events_spark",
+    "process_data_issue_comment_events_spark",
+    "process_data_pull_requests_events_spark",
+    "process_data_pull_requests_review_events_spark",
+    "process_data_pull_requests_comment_events_spark",
+]
 
 allowed_events = [
     'CommitCommentEvent',
@@ -106,12 +122,27 @@ def create_spark_date_time_columns(df, column_based):
     return df
 
 
+def get_list_files_from_pattern(pattern_filepath):
+    return []
+
+
 def read_spark_dataframes(pattern_filepath):
     df = None
     try:
+        # try to read all files at the same time
         df = spark.read.json(pattern_filepath)
     except:
         pass
+
+    if df is None:
+        files_paths = get_list_files_from_pattern(pattern_filepath=pattern_filepath)
+        for item in files_paths:
+            try:
+                temp_df = spark.read.json(item)
+                df = temp_df if df is None else df.union(temp_df) 
+            except:
+                pass
+
     return df
 
 
@@ -125,7 +156,7 @@ def save_spark_dataframe(df, write_filepath):
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
-def process_data_allowed_events_spark(df, date, write_filepath):
+def process_data_allowed_events_spark(df):
     
     main_df = df.select(
             F.col("id").alias("event_id"),
@@ -146,7 +177,7 @@ def process_data_allowed_events_spark(df, date, write_filepath):
         )
     
     main_df = create_spark_date_time_columns(df=main_df, column_based="created_at")
-    save_spark_dataframe(main_df, write_filepath)
+    return main_df
 
 # -----------------------------------------------------------------------------
 
@@ -154,7 +185,7 @@ def process_data_allowed_events_spark(df, date, write_filepath):
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
-def process_data_commit_events_spark(df, date, write_filepath):
+def process_data_commit_events_spark(df):
     commit_df = df\
         .filter(F.col("type") == "PushEvent")\
         .withColumn("id", F.col("id").cast(T.IntegerType()))\
@@ -179,14 +210,14 @@ def process_data_commit_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at")          
         )
     commit_df = create_spark_date_time_columns(commit_df, "created_at")
-    save_spark_dataframe(df=commit_df, write_filepath=write_filepath)
+    return commit_df
 # -----------------------------------------------------------------------------
 
 
 # -----------------------------------------------------------------------------
 # 
 # -----------------------------------------------------------------------------
-def process_data_push_events_spark(df, date, write_filepath):
+def process_data_push_events_spark(df):
     main_df = df\
         .filter(F.col("type") == "PushEvent")\
         .withColumn("id", F.col("id").cast(T.IntegerType()))\
@@ -202,14 +233,14 @@ def process_data_push_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),        
         )
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
+    return main_df
 # -----------------------------------------------------------------------------
 
 
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
-def process_data_commit_comment_events_spark(df, date, write_filepath):
+def process_data_commit_comment_events_spark(df):
     main_df = df\
         .filter(F.col("type") == "CommitCommentEvent")\
         .withColumn("id", F.col("id").cast(T.IntegerType()))\
@@ -226,14 +257,14 @@ def process_data_commit_comment_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),        
         )
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
+    return main_df
 # -----------------------------------------------------------------------------
 
 
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
-def process_data_release_events_spark(df, date, write_filepath):
+def process_data_release_events_spark(df):
     main_df = df\
         .filter(F.col("type") == "ReleaseEvent")\
         .withColumn("id", F.col("id").cast(T.IntegerType()))\
@@ -255,14 +286,14 @@ def process_data_release_events_spark(df, date, write_filepath):
     main_df = create_spark_date_time_columns(main_df, "created_at")
     main_df = create_spark_date_time_columns(main_df, "release_created_at")
     main_df = create_spark_date_time_columns(main_df, "release_published_at")
-    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
+    return main_df
 # -----------------------------------------------------------------------------
 
 
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
-def process_data_delete_events_spark(df, date, write_filepath):
+def process_data_delete_events_spark(df):
     main_df = df\
         .filter(F.col("type") == "DeleteEvent")\
         .withColumn("id", F.col("id").cast(T.IntegerType()))\
@@ -275,13 +306,13 @@ def process_data_delete_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),        
         )
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
+    return main_df
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
-def process_data_member_events_spark(df, date, write_filepath):
+def process_data_member_events_spark(df):
     main_df = df\
         .filter(F.col("type") == "MemberEvent")\
         .filter(F.col("payload.action").isin(allowed_action_type))\
@@ -297,14 +328,14 @@ def process_data_member_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),        
         )
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
+    return main_df
 # -----------------------------------------------------------------------------
 
 
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
-def process_data_fork_events_spark(df, date, write_filepath):
+def process_data_fork_events_spark(df):
     main_df = df\
         .filter(F.col("type") == "ForkEvent")\
         .withColumn("id", F.col("id").cast(T.IntegerType()))\
@@ -352,14 +383,14 @@ def process_data_fork_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),        
         )
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
+    return main_df
 # -----------------------------------------------------------------------------
 
 
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
-def process_data_create_events_spark(df, date, write_filepath):
+def process_data_create_events_spark(df):
     main_df = df\
         .filter(F.col("type") == "CreateEvent")\
         .withColumn("id", F.col("id").cast(T.IntegerType()))\
@@ -373,7 +404,7 @@ def process_data_create_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),        
         )
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
+    return main_df
 # -----------------------------------------------------------------------------
 
 
@@ -381,7 +412,7 @@ def process_data_create_events_spark(df, date, write_filepath):
 #
 # -----------------------------------------------------------------------------
 
-def process_data_issue_events_spark(df, date, write_filepath):
+def process_data_issue_events_spark(df):
     main_df = df\
         .filter(F.col("type") == "IssuesEvent")\
         .filter(F.col("payload.issue.state").isin(allowed_issue_state))\
@@ -423,7 +454,7 @@ def process_data_issue_events_spark(df, date, write_filepath):
     main_df = create_spark_date_time_columns(main_df, "issue_closed_at")
 
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
+    return main_df
 
 # -----------------------------------------------------------------------------
 
@@ -431,7 +462,7 @@ def process_data_issue_events_spark(df, date, write_filepath):
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
-def process_data_issue_comment_events_spark(df, date, write_filepath):
+def process_data_issue_comment_events_spark(df):
     main_df = df\
         .filter(F.col("type") == "IssuesCommentEvent")\
         .filter(F.col("user_type").isin(allowed_user_type))\
@@ -450,8 +481,7 @@ def process_data_issue_comment_events_spark(df, date, write_filepath):
             F.to_timestamp( F.col("created_at"), "yyyy-MM-dd'T'HH:mm:ss'Z'" ).alias("created_at"),        
         )
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
-
+    return main_df
 
 
 # -----------------------------------------------------------------------------
@@ -461,7 +491,7 @@ def process_data_issue_comment_events_spark(df, date, write_filepath):
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
-def process_data_pull_requests_events_spark(df, date, write_filepath):
+def process_data_pull_requests_events_spark(df):
 
     """
         assignees = [a.id for a in pr.assignees] if pr.assignees else None
@@ -527,14 +557,14 @@ def process_data_pull_requests_events_spark(df, date, write_filepath):
     main_df = create_spark_date_time_columns(main_df, "pull_request_merged_at")
 
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
+    return main_df
 # -----------------------------------------------------------------------------
 
 
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
-def process_data_pull_requests_review_events_spark(df, date, write_filepath):
+def process_data_pull_requests_review_events_spark(df):
     main_df = df\
         .filter(F.col("type") == "PullRequestReviewEvent")\
         .filter(F.col("payload.review.user.type").isin(allowed_user_type))\
@@ -560,7 +590,7 @@ def process_data_pull_requests_review_events_spark(df, date, write_filepath):
     
     main_df = create_spark_date_time_columns(main_df, "review_submitted_at")
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
+    return main_df
 # -----------------------------------------------------------------------------
 
 
@@ -568,7 +598,7 @@ def process_data_pull_requests_review_events_spark(df, date, write_filepath):
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
-def process_data_pull_requests_comment_events_spark(df, date, write_filepath):
+def process_data_pull_requests_comment_events_spark(df):
     main_df = df\
         .filter(F.col("type") == "PullRequestReviewCommentEvent")\
         .filter(F.col("payload.comment.user.type").isin(allowed_user_type))\
@@ -607,14 +637,13 @@ def process_data_pull_requests_comment_events_spark(df, date, write_filepath):
     main_df = create_spark_date_time_columns(main_df, "comment_created_at")
     main_df = create_spark_date_time_columns(main_df, "comment_updated_at")
     main_df = create_spark_date_time_columns(main_df, "created_at")
-    
-    save_spark_dataframe(df=main_df, write_filepath=write_filepath)
+    return main_df
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
-def main(date, read_filepath, destination_bucket):
+def main(date, read_filepath, destination_bucket, function_argument):
 
     logging.info("Inside main function")
     logging.info("arguments:")
@@ -626,7 +655,19 @@ def main(date, read_filepath, destination_bucket):
     read_filepath_str = read_filepath.format(date)
     logging.info(read_filepath_str)
 
+    logging.info("create date_str")
     date_str = date.replace("-", "")
+    logging.info(date_str)
+
+    logging.info("creating function name")
+    function_name = "process_{}_spark".format(function_argument)
+    logging.info(function_name)
+    assert function_name in VALID_FUNCTION_NAMES, \
+        "ERROR: invalid value for argument function: {}".format(function_argument)
+
+    logging.info("creatting path to store file result")
+    write_filepath = f"gs://{destination_bucket}/gh-archives/processed/{function_argument}"
+    logging.info(write_filepath)
 
     logging.info("reading files")
     # df = spark.read.json(read_filepath_str)
@@ -644,49 +685,41 @@ def main(date, read_filepath, destination_bucket):
     # ALLOWED EVENTS
     # -----------------------------------------------------------------------------
     
-    write_filepath = f"gs://{destination_bucket}/gh-archives/processed/allowed_events/"
-    process_data_allowed_events_spark(df=df, date=date_str, write_filepath=write_filepath)
+    # write_filepath = f"gs://{destination_bucket}/gh-archives/processed/allowed_events/"
+    # process_data_allowed_events_spark(df=df, date=date_str, write_filepath=write_filepath)
 
     # -----------------------------------------------------------------------------
 
+    if function_name == "process_data_allowed_events_spark":
+        df = process_data_allowed_events_spark(df=df)
+    elif function_name == "process_data_commit_events_spark":
+        df = process_data_commit_events_spark(df=df)
+    elif function_name == "process_data_push_events_spark":
+        df = process_data_push_events_spark(df=df)
+    elif function_name == "process_data_release_events_spark":
+        df = process_data_release_events_spark(df=df)
+    elif function_name == "process_data_delete_events_spark":
+        df = process_data_delete_events_spark(df=df)
+    elif function_name == "process_data_member_events_spark":
+        df = process_data_member_events_spark(df=df)
+    elif function_name == "process_data_fork_events_spark":
+        df = process_data_fork_events_spark(df=df)
+    elif function_name == "process_data_create_events_spark":
+        df = process_data_create_events_spark(df=df)
+    elif function_name == "process_data_issue_events_spark":
+        df = process_data_issue_events_spark(df=df)
+    elif function_name == "process_data_issue_comment_events_spark":
+        df = process_data_issue_comment_events_spark(df=df)
+    elif function_name == "process_data_pull_requests_events_spark":
+        df = process_data_pull_requests_events_spark(df=df)
+    elif function_name == "process_data_pull_requests_review_events_spark":
+        df = process_data_pull_requests_review_events_spark(df=df)
+    elif function_name == "process_data_pull_requests_comment_events_spark":
+        df = process_data_pull_requests_comment_events_spark(df=df)
+
+    save_spark_dataframe(df=df, write_filepath=write_filepath)
+
     return
-
-    write_filepath_commits_events = f"gs://{destination_bucket}/gh-archives/processed/commits_events"
-    process_data_commit_events_spark(df=df, date=date_str, write_filepath=write_filepath_commits_events)
-
-    write_filepath_push_events = f"gs://{destination_bucket}/gh-archives/processed/push_events"
-    process_data_push_events_spark(df=df, date=date_str, write_filepath=write_filepath_push_events)
-
-    write_file_path_release = f"gs://{destination_bucket}/gh-archives/processed/release_events"
-    process_data_release_events_spark(df=df, date=date_str, write_filepath=write_file_path_release)
-
-    write_file_path_delete = f"gs://{destination_bucket}/gh-archives/processed/delete_events"
-    process_data_delete_events_spark(df=df, date=date_str, write_filepath=write_file_path_delete)
-
-    write_file_path_member = f"gs://{destination_bucket}/gh-archives/processed/member_events"
-    process_data_member_events_spark(df=df, date=date_str, write_filepath=write_file_path_member)
-
-    write_file_fork_events = f"gs://{destination_bucket}/gh-archives/processed/fork_events"
-    process_data_fork_events_spark(df=df, date=date_str, write_filepath=write_file_fork_events)
-
-    write_file_create_events = f"gs://{destination_bucket}/gh-archives/processed/create_events"
-    process_data_create_events_spark(df=df, date=date_str, write_filepath=write_file_create_events)
-
-    write_file_pull_issue_events = f"gs://{destination_bucket}/gh-archives/processed/issue_event"
-    process_data_issue_events_spark(df=df, date=date_str, write_filepath=write_file_pull_issue_events)
-
-    write_file_pull_issue_comment_events = f"gs://{destination_bucket}/gh-archives/processed/issue_comment_event"
-    process_data_issue_comment_events_spark(df=df, date=date_str, write_filepath=write_file_pull_issue_comment_events)
-
-    write_file_pull_requests_events = f"gs://{destination_bucket}/gh-archives/processed/pull_requests_events"
-    process_data_pull_requests_events_spark(df=df, date=date_str, write_filepath=write_file_pull_requests_events)
-
-    write_file_pull_requests_review = f"gs://{destination_bucket}/gh-archives/processed/pull_requests_review_events"
-    process_data_pull_requests_review_events_spark(df=df, date=date_str, write_filepath=write_file_pull_requests_review)
-
-    write_file_pull_requests_comment_events = f"gs://{destination_bucket}/gh-archives/processed/pull_requests_comment_events"
-    process_data_pull_requests_comment_events_spark(df=df, date=date_str, write_filepath=write_file_pull_requests_comment_events)
-
 # -----------------------------------------------------------------------------
 
 
@@ -699,11 +732,13 @@ if __name__ == '__main__':
     parser.add_argument("--date", help="Date in format YYYY-MM-DD", required=True)
     parser.add_argument("--source", help="Source files pattern for the GH archive to process.", required=True)
     parser.add_argument("--destination", help="Destination bucket.", required=True)
+    parser.add_argument("--function", help="Subrutine", required=False, default="allowed_events")
 
     args = parser.parse_args()
     date = args.date
     read_filepath = args.source
     destination_bucket = args.destination
-    main(date, read_filepath, destination_bucket)
+    function_argument = args.function 
+    main(date, read_filepath, destination_bucket, function_argument)
 
 # -----------------------------------------------------------------------------
