@@ -5,7 +5,7 @@ from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 
-from google.cloud.dlp_v2.types.storage import CloudStorageRegexFileSet
+# from google.cloud.dlp_v2.types.storage import CloudStorageRegexFileSet
 
 # spark = SparkSession.builder.appName('pySparkSetup').getOrCreate()
 spark = SparkSession.builder.master("yarn").appName('GCSFilesRead').getOrCreate()
@@ -122,11 +122,12 @@ def create_spark_date_time_columns(df, column_based):
     return df
 
 
-def get_list_files_from_pattern(pattern_filepath):
+def get_list_files_from_pattern(bucket, pattern_filepath):
+    # CloudStorageRegexFileSet(bucket_name=bucket, include_regex=[pattern_filepath])
     return []
 
 
-def read_spark_dataframes(pattern_filepath):
+def read_spark_dataframes(pattern_filepath, source_bucket=None):
     df = None
     try:
         # try to read all files at the same time
@@ -134,8 +135,8 @@ def read_spark_dataframes(pattern_filepath):
     except:
         pass
 
-    if df is None:
-        files_paths = get_list_files_from_pattern(pattern_filepath=pattern_filepath)
+    if df is None and not source_bucket is None:
+        files_paths = get_list_files_from_pattern(bucket=source_bucket, pattern_filepath=pattern_filepath)
         for item in files_paths:
             try:
                 temp_df = spark.read.json(item)
