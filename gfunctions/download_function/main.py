@@ -1,6 +1,9 @@
 from datetime import timedelta 
 from datetime import datetime
 
+import gzip
+import io
+import json
 import os
 import tempfile
 
@@ -41,6 +44,15 @@ def download_gh_archive_data(request):
         hour = datetime.now().hour
         
 
+    check_file = False
+    if request_json and 'check' in request_json:
+        check_file = request_json['check']
+    elif request_args and 'check' in request_args:
+        check_file = request_args['check']
+    else:
+        check_file = False
+
+
     storage_client = Client()
     bucket_name = os.environ.get('BUCKET_NAME')
 
@@ -56,8 +68,25 @@ def download_gh_archive_data(request):
         file_name = f"{date}-{hour}.json.gz"
         file_path = os.path.join(output_dir, file_name)
         response = requests.get(url)
-        with open(file_path, 'wb') as f:
-            f.write(response.content)
+
+        if response.code != 200:
+            return "ERROR: invalid response. ", 404
+
+        if check_file:
+            with io.BytesIO(response.content) as data_stream:
+                with gzip.open(data_stream, 'rb') as archivo_entrada, \
+                    gzip.open(file_path, 'wt', encoding='utf-8') as archivo_salida:
+                    for linea in archivo_entrada:
+                        try:
+                            obj = json.loads(linea.decode('utf-8'))
+                            json.dump(obj, archivo_salida)
+                            archivo_salida.write('\n')
+                        except json.JSONDecodeError:
+                            print(f"Error on file {date}-{hour}. Json skipping.")
+
+        else:
+            with open(file_path, 'wb') as f:
+                f.write(response.content)
 
         blob = bucket.blob(f"gh-archives/raw/{date}/")
         blob.upload_from_string('')
